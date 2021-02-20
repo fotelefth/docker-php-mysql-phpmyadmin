@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+    web:
+        container_name: stack-web-server
+        build:
+            context: .
+        ports:
+            - 80:80
+        volumes:
+            - "./src:/var/www/html"
+    database:
+        container_name: stack-database-server
+        image: mysql:5.7
+        ports:
+            - 3306:3306
+        volumes:
+            - database-volume:/var/lib/mysql
+            # - ./init_data/init.sql:/docker-entrypoint-initdb.d/init.sql
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+            MYSQL_ROOT_PASSWORD: "admin1234"
+            MYSQL_USER: "user"
+            MYSQL_PASSWORD: "user1234"
+            MYSQL_DATABASE: "stack_db"
+        command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci']
+    phpmyadmin:
+        container_name: stack-phpmyadmin
+        image: phpmyadmin
+        depends_on: 
+            - database
+        environment:
+            - PMA_HOST=database
+            - PMA_PORT=3306
+            - PMA_ARBITRARY=1
+        restart: always
+        ports:
+            - 81:80
+        volumes:
+            - /sessions
+
+volumes:
+    database-volume:
